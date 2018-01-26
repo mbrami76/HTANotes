@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>Take a note</title>
+  <link rel="stylesheet" href="w3.css">
+  <HTA:APPLICATION 
+    border="thick" 
+    borderStyle="normal" 
+    caption="yes" 
+    icon="favicon.bmp"
+    maximizeButton="no" 
+    minimizeButton="yes" 
+    showInTaskbar="yes" 
+    windowState="normal"
+    innerBorder="yes"
+    navigable="no"
+    scroll="auto"
+    scrollFlat="yes"
+    version="1" /> 
+  <script language="vbscript">
+    option explicit
+    on error resume next
+    dim dt, currDir, timerId, filename
+  </script>
+ </head>
+ <body>
+  <h1 id = "title">New note</h1>
+  </br>
+  <div>
+   <label>Write your note</label>
+   <textarea class="w3-input w3-border" style="resize:none" id = "inputBox" rows="10" ></textArea>
+   <button class = "w3-button w3-block" onClick="WriteToFileMyInput()" accessKey = "S">Submit</button>
+   <button class =  "w3-button w3-block" onClick = "OpenNotes()">View today's notes</button>
+  </div>
+  <script language="vbscript">
+    sub window_onload
+    	'starts timer, resizes window and gets current directory
+        timerId = setInterval ("Tick", 1000)
+    	window.resizeTo 640, 480
+    	SetCurrDir
+    end sub
+    
+    sub Tick
+        'timer handler updates time and sets filename for the day
+    	dt = now()
+    	document.getElementById("title").innerHtml = "New note @ " & dt
+        filename = year(dt) & "-" & right("00" & month(dt), 2) & "-" & right("00" & day(dt), 2) & ".dat"
+    end sub
+    
+    Sub SetCurrDir()
+       'gets current hts file directory
+       dim fso: Set fso = CreateObject("Scripting.FileSystemObject") 
+       dim HtmlLoc: HtmlLoc = document.location.href 
+       dim HTAfile: HTAfile = Replace(Right(HtmlLoc, Len(HtmlLoc) - 8), "/", "\") 
+       HTAfile = UnEscape(HTAfile) 
+       dim thisFile: Set thisFile = fso.GetFile(HTAfile) 
+       dim ParentDir: ParentDir = ThisFile.ParentFolder 
+       dim folder: set folder = fso.GetFolder(ParentDir) 
+       currDir = Folder.ShortPath 
+    end sub
+    
+    sub WriteToFileMyInput()
+        'writes to daily file, cleans textarea
+        dim fso: set fso = createObject ("scripting.fileSystemObject")
+    	dim ts:  Set ts = fso.OpenTextFile (currDir & "\" & fileName , 8, true, -2)
+    	dim datepart: datepart = dt & " - "
+    	dim spacer: spacer = ""
+    	dim i: i = 0
+    	for i = 1 to len(datepart)
+    	    spacer = spacer & " "
+    	next	
+    	dim textLines: textLines = split (document.getElementById("inputBox").value, VBCRLF)
+    	for i = 0 to ubound(textLines)
+    	    if i = 0 then
+    			ts.Writeline datepart & textlines(i)
+    		else
+    			ts.Writeline spacer & textlines(i)
+    		end if
+    	next 
+        ts.Close
+    	document.getElementById("inputBox").value = ""
+    end sub
+    
+    sub openNotes()
+        'opens today's notes file into notepad
+        Dim WshShell: Set WshShell = CreateObject("WScript.Shell")
+        WshShell.Run "notepad.exe " & currDir & "\" & filename, 1, TRUE
+    end sub
+    
+    'to do next: create a "calendar view" with all days with notes
+  </script>
+ </body>
+</html>
